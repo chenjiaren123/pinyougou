@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<beans xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans">
+    <!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供-->
+    <bean class="org.apache.activemq.ActiveMQConnectionFactory" id="targetConnectionFactory">
+        <property value="tcp://47.102.124.148:61616" name="brokerURL"/>
+    </bean>
+    <!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
+    <bean class="org.springframework.jms.connection.SingleConnectionFactory" id="connectionFactory">
+        <!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+        <property name="targetConnectionFactory" ref="targetConnectionFactory"/>
+    </bean>
+    <!-- Spring提供的JMS工具类，它可以进行消息发送、接收等 -->
+    <bean class="org.springframework.jms.core.JmsTemplate" id="jmsTemplate">
+        <!-- 这个connectionFactory对应的是我们定义的Spring提供的那个ConnectionFactory对象 -->
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <!--队列目的地，点对点，导入索引库-->
+    <bean class="org.apache.activemq.command.ActiveMQQueue" id="queueSolrDestination">
+        <constructor-arg value="pinyougou_queue_solr"/>
+    </bean>
+    <!--队列目的地，点对点，删除索引库信息-->
+    <bean class="org.apache.activemq.command.ActiveMQQueue" id="queueSolrDeleteDestination">
+        <constructor-arg value="pinyougou_queue_solr_delete"/>
+    </bean>
+
+    <!--订阅模式，生成商品详细页-->
+    <bean class="org.apache.activemq.command.ActiveMQTopic" id="topicPageDestination">
+        <constructor-arg value="pinyougou_topic_page"/>
+    </bean>
+    <!--订阅模式，删除商品详细页-->
+    <bean class="org.apache.activemq.command.ActiveMQTopic" id="topicPageDeleteDestination">
+        <constructor-arg value="pinyougou_topic_page_delete"/>
+    </bean>
+</beans>
